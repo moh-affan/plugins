@@ -125,17 +125,23 @@ public class ResolutionFeature extends CameraFeature<ResolutionPreset> {
     if (preset.ordinal() > ResolutionPreset.high.ordinal()) {
       preset = ResolutionPreset.high;
     }
-    if (Build.VERSION.SDK_INT >= 31) {
-      EncoderProfiles profile = getBestAvailableCamcorderProfileForResolutionPreset(cameraId, preset);
-      List<EncoderProfiles.VideoProfile> videoProfiles = profile.getVideoProfiles();
-      EncoderProfiles.VideoProfile defaultVideoProfile = videoProfiles.get(0);
-      if (defaultVideoProfile == null) {
+    try {
+      if (Build.VERSION.SDK_INT >= 31) {
+        EncoderProfiles profile = getBestAvailableCamcorderProfileForResolutionPreset(cameraId, preset);
+        List<EncoderProfiles.VideoProfile> videoProfiles = profile.getVideoProfiles();
+        EncoderProfiles.VideoProfile defaultVideoProfile = videoProfiles.get(0);
+        if (defaultVideoProfile == null) {
+          @SuppressWarnings("deprecation")
+          CamcorderProfile profile2 = getBestAvailableCamcorderProfileForResolutionPresetLegacy(cameraId, preset);
+          return new Size(profile2.videoFrameWidth, profile2.videoFrameHeight);
+        } else
+          return new Size(defaultVideoProfile.getWidth(), defaultVideoProfile.getHeight());
+      } else {
         @SuppressWarnings("deprecation")
-        CamcorderProfile profile2 = getBestAvailableCamcorderProfileForResolutionPresetLegacy(cameraId, preset);
-        return new Size(profile2.videoFrameWidth, profile2.videoFrameHeight);
-      } else
-        return new Size(defaultVideoProfile.getWidth(), defaultVideoProfile.getHeight());
-    } else {
+        CamcorderProfile profile = getBestAvailableCamcorderProfileForResolutionPresetLegacy(cameraId, preset);
+        return new Size(profile.videoFrameWidth, profile.videoFrameHeight);
+      }
+    } catch (Exception e) {
       @SuppressWarnings("deprecation")
       CamcorderProfile profile = getBestAvailableCamcorderProfileForResolutionPresetLegacy(cameraId, preset);
       return new Size(profile.videoFrameWidth, profile.videoFrameHeight);
@@ -254,20 +260,28 @@ public class ResolutionFeature extends CameraFeature<ResolutionPreset> {
       return;
     }
 
-    if (Build.VERSION.SDK_INT >= 31) {
-      recordingProfile = getBestAvailableCamcorderProfileForResolutionPreset(cameraId, resolutionPreset);
-      List<EncoderProfiles.VideoProfile> videoProfiles = recordingProfile.getVideoProfiles();
+    try {
+      if (Build.VERSION.SDK_INT >= 31) {
+        recordingProfile = getBestAvailableCamcorderProfileForResolutionPreset(cameraId, resolutionPreset);
+        List<EncoderProfiles.VideoProfile> videoProfiles = recordingProfile.getVideoProfiles();
 
-      EncoderProfiles.VideoProfile defaultVideoProfile = videoProfiles.get(0);
-      if (defaultVideoProfile == null) {
+        EncoderProfiles.VideoProfile defaultVideoProfile = videoProfiles.get(0);
+        if (defaultVideoProfile == null) {
+          @SuppressWarnings("deprecation")
+          CamcorderProfile camcorderProfile = getBestAvailableCamcorderProfileForResolutionPresetLegacy(cameraId,
+              resolutionPreset);
+          recordingProfileLegacy = camcorderProfile;
+          captureSize = new Size(recordingProfileLegacy.videoFrameWidth, recordingProfileLegacy.videoFrameHeight);
+        } else
+          captureSize = new Size(defaultVideoProfile.getWidth(), defaultVideoProfile.getHeight());
+      } else {
         @SuppressWarnings("deprecation")
         CamcorderProfile camcorderProfile = getBestAvailableCamcorderProfileForResolutionPresetLegacy(cameraId,
             resolutionPreset);
         recordingProfileLegacy = camcorderProfile;
         captureSize = new Size(recordingProfileLegacy.videoFrameWidth, recordingProfileLegacy.videoFrameHeight);
-      } else
-        captureSize = new Size(defaultVideoProfile.getWidth(), defaultVideoProfile.getHeight());
-    } else {
+      }
+    } catch (Exception ex) {
       @SuppressWarnings("deprecation")
       CamcorderProfile camcorderProfile = getBestAvailableCamcorderProfileForResolutionPresetLegacy(cameraId,
           resolutionPreset);
