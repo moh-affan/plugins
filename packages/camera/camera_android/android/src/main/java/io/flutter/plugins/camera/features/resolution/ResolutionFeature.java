@@ -133,8 +133,8 @@ public class ResolutionFeature extends CameraFeature<ResolutionPreset> {
         @SuppressWarnings("deprecation")
         CamcorderProfile profile2 = getBestAvailableCamcorderProfileForResolutionPresetLegacy(cameraId, preset);
         return new Size(profile2.videoFrameWidth, profile2.videoFrameHeight);
-      }
-      return new Size(defaultVideoProfile.getWidth(), defaultVideoProfile.getHeight());
+      } else
+        return new Size(defaultVideoProfile.getWidth(), defaultVideoProfile.getHeight());
     } else {
       @SuppressWarnings("deprecation")
       CamcorderProfile profile = getBestAvailableCamcorderProfileForResolutionPresetLegacy(cameraId, preset);
